@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamical Systems for the Curious Mind · Midterm Project</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --paper: #F4EFE4;
+      --paper-warm: #EDE6D6;
+      --paper-shade: #E4DCC8;
+      --card: #FBF8F1;
+      --ink: #1F2A3C;
+      --ink-soft: #3D4A5F;
+      --ink-faint: #6B7488;
+      --rule: #C9C0A8;
+      --rule-soft: #DDD5C0;
+      --grid: rgba(31, 42, 60, 0.06);
+      --grid-strong: rgba(31, 42, 60, 0.11);
+
+      --blue: #2C4A7C;
+      --blue-soft: #4A6FA5;
+      --blue-wash: rgba(44, 74, 124, 0.09);
+      --rust: #B5591F;
+      --rust-soft: #C97B45;
+      --rust-wash: rgba(181, 89, 31, 0.10);
+      --ochre: #C99A2E;
+      --ochre-wash: rgba(201, 154, 46, 0.12);
+
+      --radius: 4px;
+      --radius-sm: 3px;
+
+      --font-display: 'Special Elite', 'Courier New', monospace;
+      --font-body: 'EB Garamond', 'Times New Roman', Times, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --shadow-card: 0 1px 2px rgba(31,42,60,0.06), 0 8px 24px -12px rgba(31,42,60,0.18);
+      --shadow-lift: 0 2px 4px rgba(31,42,60,0.08), 0 14px 32px -14px rgba(31,42,60,0.25);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,0.5) 0%, transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(201, 192, 168, 0.14) 0%, transparent 55%),
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: auto, auto, 28px 28px, 28px 28px;
+      background-attachment: fixed, fixed, fixed, fixed;
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 17px;
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 1040px;
+      width: 100%;
+    }
+
+    /* ---------- HEADER STRIP ---------- */
+    .header-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2px 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      border-bottom: 1px solid var(--rule-soft);
+      margin-bottom: 2.5rem;
+    }
+
+    .header-strip .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--rust);
+      box-shadow: 0 0 0 3px var(--rust-wash);
+      animation: pulse 2.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    .header-strip .right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-strip .sep { color: var(--rule); }
+
+    /* ---------- TITLE BLOCK ---------- */
+    .title-block {
+      margin-bottom: 1.6rem;
+      padding-bottom: 1.6rem;
+      border-bottom: 1px solid var(--rule-soft);
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 3.1rem;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+      margin-bottom: 0.9rem;
+      max-width: 760px;
+      color: var(--ink);
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--ink-faint);
+      font-weight: 400;
+    }
+
+    .subhead {
+      font-family: var(--font-body);
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--ink-soft);
+      max-width: 620px;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    /* ---------- SECTION LABEL ---------- */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 0 0 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    .section-label .num {
+      color: var(--rust);
+      font-weight: 500;
+    }
+
+    .section-label .line {
+      flex: 1;
+      height: 1px;
+      background: var(--rule-soft);
+    }
+
+    /* ---------- TABS ---------- */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0 0 1.2rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--rule);
+      color: var(--ink-soft);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+      padding: 9px 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn i { font-size: 0.8rem; }
+
+    .tab-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: var(--blue-wash);
+    }
+
+    .tab-btn.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: var(--paper);
+    }
+
+    .tab-content {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 2.2rem 2.2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    .tab-content::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .tab-content::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 2.4rem;
+      width: 1px;
+      background: rgba(181, 89, 31, 0.18);
+      pointer-events: none;
+    }
+
+    .tab-content > * {
+      position: relative;
+      z-index: 1;
+      padding-left: 1.6rem;
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.25s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-pane h2 {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 1.1rem;
+      letter-spacing: 0.01em;
+      line-height: 1.25;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .tab-pane h2 .h-icon {
+      color: var(--rust);
+      font-size: 1.1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid var(--rust);
+      background: var(--rust-wash);
+      flex-shrink: 0;
+    }
+
+    .tab-pane p {
+      font-family: var(--font-body);
+      color: var(--ink-soft);
+      margin-bottom: 1rem;
+      font-size: 1.05rem;
+      line-height: 1.75;
+    }
+
+    .tab-pane strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .tab-pane em {
+      color: var(--ink);
+      font-style: italic;
+    }
+
+    .tab-pane ul {
+      margin-left: 1.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab-pane li {
+      font-family: var(--font-body);
+      color: var(--ink-soft);
+      font-size: 1.02rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.7;
+    }
+
+    .tab-pane li::marker {
+      color: var(--rust);
+    }
+
+    .highlight-box {
+      background: var(--blue-wash);
+      border-left: 3px solid var(--blue);
+      padding: 1rem 1.25rem;
+      border-radius: 0 3px 3px 0;
+      margin: 1.3rem 0;
+      font-family: var(--font-body);
+      font-size: 1.02rem;
+      color: var(--ink-soft);
+      line-height: 1.7;
+    }
+
+    .highlight-box strong { color: var(--blue); font-weight: 600; }
+
+    .highlight-box.rust {
+      background: var(--rust-wash);
+      border-left-color: var(--rust);
+    }
+    .highlight-box.rust strong { color: var(--rust); }
+
+    /* ---------- MINI DIAGRAM ---------- */
+    .mini-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin: 1.8rem 0;
+      padding: 1.6rem;
+      background: var(--paper-warm);
+      border: 1px solid var(--rule-soft);
+      border-radius: var(--radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mini-diagram::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-strong) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+    }
+
+    .mini-diagram > * { position: relative; z-index: 1; }
+
+    .diagram-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .diagram-circle {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1.5px solid var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      color: var(--blue);
+      box-shadow: 0 2px 6px rgba(31,42,60,0.06);
+    }
+
+    .diagram-arrow {
+      font-size: 1.05rem;
+      color: var(--rust);
+    }
+
+    .diagram-label {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      color: var(--ink-faint);
+      text-align: center;
+      max-width: 110px;
+      letter-spacing: 0.02em;
+      line-height: 1.4;
+    }
+
+    /* ---------- DEMO LAUNCH BUTTON ---------- */
+    .demo-launch-row {
+      margin-top: 1.5rem;
+      padding-top: 1.4rem;
+      border-top: 1px dashed var(--rule);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .demo-launch-btn {
+      background: var(--blue);
+      color: var(--paper);
+      border: 1px solid var(--blue);
+      padding: 10px 18px;
+      border-radius: 2px;
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .demo-launch-btn:hover {
+      background: var(--ink);
+      border-color: var(--ink);
+      transform: translateY(-1px);
+    }
+
+    .demo-launch-btn i { font-size: 0.85rem; }
+
+    .demo-launch-note {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    /* ---------- DEMO MODAL ---------- */
+    .demo-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 42, 60, 0.72);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .demo-modal.open {
+      display: flex;
+      animation: modalFade 0.2s ease;
+    }
+
+    @keyframes modalFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .demo-modal-content {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 960px;
+      height: 90vh;
+      max-height: 90vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 60px -20px rgba(0,0,0,0.5);
+    }
+
+    .demo-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--rule-soft);
+      background: var(--card);
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      flex-shrink: 0;
+    }
+
+    .demo-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-modal-title .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--rust);
+      box-shadow: 0 0 0 3px var(--rust-wash);
+    }
+
+    .demo-close {
+      background: transparent;
+      border: 1px solid var(--rule);
+      color: var(--ink-soft);
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      padding: 5px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .demo-close:hover {
+      border-color: var(--rust);
+      color: var(--rust);
+      background: var(--rust-wash);
+    }
+
+    .demo-modal-body {
+      flex: 1;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .demo-modal-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ---------- FOOTER ---------- */
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+    }
+
+    .footer a { color: var(--rust); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 700px) {
+      body { padding: 1.5rem 1rem 2rem; font-size: 16px; }
+      h1 { font-size: 2.1rem; }
+      .subhead { font-size: 1.05rem; }
+      .tab-content { padding: 1.6rem 1.2rem 1.6rem 1.8rem; }
+      .tab-content::after { left: 1.4rem; }
+      .tab-content > * { padding-left: 1rem; }
+      .tab-btn { font-size: 0.78rem; padding: 7px 12px; }
+      .tab-pane h2 { font-size: 1.5rem; }
+      .tab-pane p, .tab-pane li { font-size: 1rem; }
+      .header-strip .right .hide-sm { display: none; }
+      .demo-modal { padding: 0.6rem; }
+      .demo-modal-content { height: 94vh; max-height: 94vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- HEADER STRIP -->
+    <div class="header-strip">
+      <div class="right">
+        <span>midterm · dynamical systems</span>
+      </div>
+    </div>
+
+    <!-- TITLE BLOCK -->
+    <div class="title-block">
+      <h1>
+        Dynamical Systems<br>
+        <em>for the Curious Mind</em>
+      </h1>
+      <p>
+        Explained without the jargon.
+      </p>
+    </div>
+
+    <div class="tabs" id="tabButtons">
+      <button class="tab-btn active" data-tab="emergence"> emergence</button>
+      <button class="tab-btn" data-tab="variables"> variables</button>
+      <button class="tab-btn" data-tab="states"> states</button>
+      <button class="tab-btn" data-tab="time"> time</button>
+    </div>
+
+    <div class="tab-content">
+      <!-- EMERGENCE -->
+      <div class="tab-pane active" id="emergence">
+        <h2>Emergence and Self-Organization</h2>
+
+        <p>Have you ever seen patterns appear in places where they seemed to come along randomly? 
+          A flock of birds turning as one across the sky. Water flowing down a river. 
+          A traffic jam that forms out of nowhere, then dissolves just as quickly. 
+          Nothing is telling any of these what to do, yet each one produces a pattern you can see and sometimes name.</p>
+
+        <p><strong>Emergence</strong> is what happens when all the parts of a system produce patterns that none of the individual parts possess on their own.</p>
+
+        <p><strong>Self-organization</strong> describes <em>how</em> those parts come together when nothing and nobody is dictating the specific pattern that forms.</p>
+
+        <p>In short, emergence is the pattern that comes out, while self-organization is the behavior of the system that creates it.</p>
+
+        <ul>
+          <li><strong>Key idea:</strong> the whole is not just the sum of its parts.</li>
+          <li>By definition, summing a bunch of ants together just means we have a bunch of ants. However, through self-organization, those ants work together in ways that look like patterns. 
+            For example, you may see one ant one day and then a million in a line the next. 
+            The first ant found food and carried it back to the nest while releasing a pheromone trail for other ants to follow. 
+            Rather than being told to follow the pheromone, other ants detect the chemical and follow the path on their own. 
+            When traveling back to the nest, each one reinforces the trail by adding its own pheromones, so even more ants follow the trail.
+          </li>
+          <li>In this example, self-organization is the process of ants following and reinforcing the pheromone trail. Emergence is the ant line itself.</li>
+        </ul>
+
+        <div class="demo-launch-row">
+          <button class="demo-launch-btn" id="launch-emergence-demo">
+            launch demo
+          </button>
+          <span class="demo-launch-note">try it yourself · school of fish</span>
+        </div>
+      </div>
+
+      <!-- VARIABLES -->
+      <div class="tab-pane" id="variables">
+        <h2>Variables: what goes in and what comes out</h2>
+
+        <p>To study any system we have to decide what we change and what we observe. That's where <strong>input</strong> and <strong>output</strong> variables come in.</p>
+
+        <p><strong>Input variables</strong> are what we manipulate or feed in.</p>
+        <p><strong>Output variables</strong> are what we measure as a result.</p>
+
+        <ul>
+          <li>In one of my studies (I try to understand the perceptions of space and time), the input might be target distance and the output might be the participant's estimated distance.</li>
+          <li>In a different study, the input might be sleep quantity and the output might be reported energy.</li>
+        </ul>
+
+        <p>Here is the part that makes variables matter for dynamical systems. We do not just measure these once. We watch how they <strong>move over time</strong>. A variable that changes is what turns a static snapshot into a system in motion.</p>
+
+        <p>We can understand measurement types by talking about discrete versus continuous measures. Here, we're focused on how often something is measured over time. We call this the <strong>sampling rate</strong>.</p>
+
+        <ul>
+          <li><strong>Continuous variables</strong> are those that are sampled often enough that the measurement appears unbroken. These can include most heart rate monitors, neuro-imaging methods (fMRI), or movement sensors.</li>
+          <li><strong>Discrete variables</strong> are those that are sampled infrequently enough for us to notice the temporal distance between the measurements. One example would be taking a mood questionnaire once a day.</li>
+        </ul>
+
+        <p>The sampling rate decides what patterns you can see. 
+          A signal that oscillates quickly will disappear if you only sample it once a day. 
+          A signal that drifts slowly can be fully captured by hourly readings. 
+          This matters for dynamical systems because you can only study the dynamics you can actually observe.
+        </p>
+      </div>
+
+      <!-- STATES -->
+      <div class="tab-pane" id="states">
+        <h2>Distinguishing States</h2>
+
+        <p>A <strong>state</strong> is the configuration of a system at a moment in time. 
+          It is not just what the system looks like right now. 
+          It is the full picture of the system at that instant, complete enough to determine what it will do next.
+        </p>
+
+        <p>States have different roles. </p>
+
+        <ul>
+          <li>Some are stable and hold their shape even when the system is nudged by something external (attractor).</li>
+          <li>Some are unstable and don't want to stay there for very long (repeller).</li>
+          <li>Some are just passing through, like the pre-pattern values that show up before a system settles.</li>
+        </ul>
+
+        <p>Distinguishing states lets us describe the behavior of a system. 
+          Is it seemingly sitting still? Is it cycling between a few patterns? Is it drifting unpredictably? 
+          Each question is really asking: what kind of state is the system in, and how does it move from one state to another?
+        </p>
+
+        <div class="demo-launch-row">
+          <button class="demo-launch-btn" id="launch-states-demo">
+            launch demo
+          </button>
+          <span class="demo-launch-note">try it yourself · build a state map</span>
+        </div>
+      </div>
+
+      <!-- TIME -->
+      <div class="tab-pane" id="time">
+        <h2>The Role of Time</h2>
+
+        <p>Have you ever experienced anything without the presence of time? 
+          I doubt it. Time is inherent to human life, to experience, to movement, to anything you can think of. 
+          Just as it is inherent in dynamical systems.
+        </p>
+
+        <p>Without time, a dynamical system is just a static picture. Time allows us see how states evolve, how long they last, and how quickly they change.</p>
+
+        <p>Time is what turns a collection of snapshots into a story of change.</p>
+
+        <p>In short, time is defined by <strong>change</strong> in dynamical systems</p>
+      </div>
+
+  </div>
+
+  <!-- EMERGENCE DEMO MODAL -->
+  <div id="emergence-demo-modal" class="demo-modal">
+    <div class="demo-modal-content">
+      <div class="demo-modal-header">
+        <div class="demo-modal-title">
+          <span class="dot"></span>
+          <span>demo · emergence · school of fish</span>
+        </div>
+        <button class="demo-close" id="close-emergence-demo">
+          <i class="fas fa-times"></i>
+          close
+        </button>
+      </div>
+      <div class="demo-modal-body">
+        <iframe id="emergence-demo-iframe" src="about:blank" title="Emergence Demo"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATES DEMO MODAL -->
+  <div id="states-demo-modal" class="demo-modal">
+    <div class="demo-modal-content">
+      <div class="demo-modal-header">
+        <div class="demo-modal-title">
+          <span class="dot"></span>
+          <span>demo · states · attractors &amp; repellers</span>
+        </div>
+        <button class="demo-close" id="close-states-demo">
+          <i class="fas fa-times"></i>
+          close
+        </button>
+      </div>
+      <div class="demo-modal-body">
+        <iframe id="states-demo-iframe" src="about:blank" title="States Demo"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS + MODALS -->
+  <script>
+    // ---------- TABS ----------
+    (function() {
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const panes = {
+        emergence: document.getElementById('emergence'),
+        variables: document.getElementById('variables'),
+        states: document.getElementById('states'),
+        time: document.getElementById('time')
+      };
+
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tabId = this.dataset.tab;
+          tabButtons.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          Object.values(panes).forEach(p => p.classList.remove('active'));
+          if (panes[tabId]) panes[tabId].classList.add('active');
+        });
+      });
+    })();
+
+    // ---------- DEMO MODALS ----------
+    (function() {
+      function wireDemo({ modalId, iframeId, launchId, closeId, src }) {
+        const modal = document.getElementById(modalId);
+        const iframe = document.getElementById(iframeId);
+        const launchBtn = document.getElementById(launchId);
+        const closeBtn = document.getElementById(closeId);
+        if (!modal || !iframe || !launchBtn || !closeBtn) return;
+
+        function open() {
+          iframe.src = src;
+          modal.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        }
+        function close() {
+          modal.classList.remove('open');
+          document.body.style.overflow = '';
+          iframe.src = 'about:blank';
+        }
+
+        launchBtn.addEventListener('click', open);
+        closeBtn.addEventListener('click', close);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) close();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modal.classList.contains('open')) close();
+        });
+      }
+
+      wireDemo({
+        modalId: 'emergence-demo-modal',
+        iframeId: 'emergence-demo-iframe',
+        launchId: 'launch-emergence-demo',
+        closeId: 'close-emergence-demo',
+        src: 'emergence.html'
+      });
+
+      wireDemo({
+        modalId: 'states-demo-modal',
+        iframeId: 'states-demo-iframe',
+        launchId: 'launch-states-demo',
+        closeId: 'close-states-demo',
+        src: 'states.html'
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>States Demo · Attractors & Repellers</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --paper: #F4EFE4;
+      --paper-warm: #EDE6D6;
+      --card: #FBF8F1;
+      --ink: #1F2A3C;
+      --ink-soft: #3D4A5F;
+      --ink-faint: #6B7488;
+      --rule: #C9C0A8;
+      --rule-soft: #DDD5C0;
+      --grid: rgba(31, 42, 60, 0.06);
+      --grid-strong: rgba(31, 42, 60, 0.11);
+
+      --blue: #2C4A7C;
+      --blue-wash: rgba(44, 74, 124, 0.09);
+      --rust: #B5591F;
+      --rust-wash: rgba(181, 89, 31, 0.10);
+      --ochre: #C99A2E;
+      --ochre-wash: rgba(201, 154, 46, 0.12);
+
+      --font-display: 'Special Elite', 'Courier New', monospace;
+      --font-body: 'EB Garamond', 'Times New Roman', Times, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,0.5) 0%, transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(201, 192, 168, 0.14) 0%, transparent 55%),
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: auto, auto, 28px 28px, 28px 28px;
+      background-attachment: fixed, fixed, fixed, fixed;
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 17px;
+      padding: 1.6rem 1.6rem 2rem;
+      -webkit-font-smoothing: antialiased;
+      overflow-y: auto;
+    }
+
+    .inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .intro { margin-bottom: 1.2rem; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--rust);
+      background: var(--rust-wash);
+      border: 1px solid rgba(181, 89, 31, 0.28);
+      padding: 4px 11px;
+      border-radius: 2px;
+      margin-bottom: 0.9rem;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      line-height: 1.2;
+      margin-bottom: 0.55rem;
+      color: var(--ink);
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--blue);
+      font-weight: 400;
+    }
+
+    .subhead {
+      font-family: var(--font-body);
+      font-size: 1.02rem;
+      color: var(--ink-soft);
+      max-width: 640px;
+      line-height: 1.7;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 1.3rem 0 0.9rem;
+      padding-bottom: 0.9rem;
+      border-bottom: 1px solid var(--rule-soft);
+    }
+
+    .tool-group {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 5px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+    }
+
+    .tool-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      padding: 0 6px 0 4px;
+    }
+
+    .tool-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--ink-soft);
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+      padding: 6px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .tool-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: var(--blue-wash);
+    }
+
+    .tool-btn.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: var(--paper);
+    }
+
+    .tool-btn.active.rust-mode {
+      background: var(--rust);
+      border-color: var(--rust);
+      color: var(--paper);
+    }
+
+    .tool-btn i { font-size: 0.76rem; }
+
+    .tool-btn .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .tool-btn .swatch.blue { background: var(--blue); }
+    .tool-btn .swatch.rust { background: var(--rust); }
+
+    .tool-btn.active .swatch { box-shadow: 0 0 0 2px var(--paper); }
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid var(--rule);
+      color: var(--ink-soft);
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+      padding: 7px 14px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-left: auto;
+    }
+
+    .action-btn:hover {
+      border-color: var(--rust);
+      color: var(--rust);
+      background: var(--rust-wash);
+    }
+
+    .stage-wrap {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 1rem;
+      box-shadow: 0 1px 2px rgba(31,42,60,0.06), 0 8px 24px -12px rgba(31,42,60,0.18);
+      margin-bottom: 0.9rem;
+      overflow: hidden;
+    }
+
+    .stage-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-strong) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .stage-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 2rem;
+      width: 1px;
+      background: rgba(181, 89, 31, 0.2);
+      pointer-events: none;
+    }
+
+    .stage-inner {
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--rule-soft);
+      border-radius: 3px;
+      overflow: hidden;
+      background: rgba(244, 239, 228, 0.6);
+    }
+
+    #states-canvas {
+      display: block;
+      width: 100%;
+      height: 460px;
+      cursor: crosshair;
+      background: transparent;
+      touch-action: none;
+    }
+
+    .stage-hint {
+      position: absolute;
+      bottom: 1.3rem;
+      right: 1.3rem;
+      z-index: 2;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      background: rgba(251, 248, 241, 0.9);
+      border: 1px solid var(--rule-soft);
+      padding: 5px 10px;
+      border-radius: 2px;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .stage-hint.fade { opacity: 0; }
+
+    .readout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 1px solid var(--rule-soft);
+    }
+
+    .readout .stat {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .readout .stat .val {
+      color: var(--ink);
+      font-weight: 500;
+      font-size: 0.9rem;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .readout .stat .val.blue { color: var(--blue); }
+    .readout .stat .val.rust { color: var(--rust); }
+
+    .what-seen {
+      background: var(--blue-wash);
+      border-left: 3px solid var(--blue);
+      padding: 1rem 1.2rem;
+      border-radius: 0 3px 3px 0;
+      margin-top: 1.2rem;
+    }
+
+    .what-seen h4 {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.55rem;
+      font-weight: 500;
+    }
+
+    .what-seen p {
+      font-family: var(--font-body);
+      font-size: 1.02rem;
+      color: var(--ink-soft);
+      line-height: 1.75;
+      margin-bottom: 0.55rem;
+    }
+
+    .what-seen p:last-child { margin-bottom: 0; }
+
+    .what-seen strong { color: var(--ink); font-weight: 600; }
+
+    .what-seen ul {
+      margin: 0.4rem 0 0.6rem 1.2rem;
+    }
+
+    .what-seen li {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--ink-soft);
+      margin-bottom: 0.3rem;
+      line-height: 1.7;
+    }
+
+    .what-seen li::marker { color: var(--rust); }
+
+    @media (max-width: 720px) {
+      body { font-size: 16px; }
+      h1 { font-size: 1.5rem; }
+      .subhead { font-size: 0.98rem; }
+      #states-canvas { height: 340px; }
+      .readout { gap: 1rem; }
+      .toolbar { gap: 0.4rem; }
+      .action-btn { margin-left: 0; width: 100%; justify-content: center; }
+      .tool-group { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="inner">
+
+    <div class="intro">
+      <h1>Build a <em>map of states</em>.</h1>
+      <p class="subhead">
+        Place attractors (blue) and repellers (orange) anywhere on the canvas, then drop test particles to see where they flow. This is a map of where a system moves.
+      </p>
+    </div>
+
+    <div class="toolbar">
+      <div class="tool-group">
+        <span class="tool-label">place</span>
+        <button class="tool-btn active" data-mode="attractor">
+          <span class="swatch blue"></span>
+          attractor
+        </button>
+        <button class="tool-btn rust-mode" data-mode="repeller">
+          <span class="swatch rust"></span>
+          repeller
+        </button>
+      </div>
+
+      <div class="tool-group">
+        <span class="tool-label">interact</span>
+        <button class="tool-btn" data-mode="particle">
+          <i class="fas fa-circle"></i>
+          drop particle
+        </button>
+        <button class="tool-btn" data-mode="erase">
+          <i class="fas fa-eraser"></i>
+          erase
+        </button>
+      </div>
+
+      <button class="action-btn" id="clear-all">
+        <i class="fas fa-trash-alt"></i>
+        clear all
+      </button>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stage-inner">
+        <canvas id="states-canvas"></canvas>
+      </div>
+      <div class="stage-hint" id="stage-hint">click to place · drag particles to move them</div>
+    </div>
+
+    <div class="readout">
+      <div class="stat">
+        <span>attractors</span>
+        <span class="val blue" id="readout-attractors">0</span>
+      </div>
+      <div class="stat">
+        <span>repellers</span>
+        <span class="val rust" id="readout-repellers">0</span>
+      </div>
+      <div class="stat">
+        <span>particles</span>
+        <span class="val" id="readout-particles">0</span>
+      </div>
+    </div>
+
+    <div class="what-seen">
+      <h4>what you should have seen</h4>
+      <ul>
+        <li>
+          <strong>Attractors</strong> (blue) pull nearby particles toward them. Left alone, the system settles into them. A pendulum settling at the bottom is finding its attractor.
+        </li>
+        <li>
+          <strong>Repellers</strong> (orange) push nearby particles away. The system doesn't want to stay in that state. They're unstable like balancing a pencil on its tip. Any tiny nudge and the pencil falls (or the particles flee).
+        </li>
+      </ul>
+      <p>
+        Drop particles near a mix of both and watch their behavior. Where do they go? How fast do they move?
+      </p>
+      <p>
+        <em>NOTE: One function of this code is that it assumes we are looking at only one window of the system.
+        This means that the system goes on forever in all directions and I depicted this by having particles that get pushed past the edge simply leave the map. 
+        No walls, no bouncing. Once the particicle leaves this window we assume it goes into another map that we don't have imagined here.</em>
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    (function() {
+      const canvas = document.getElementById('states-canvas');
+      const ctx = canvas.getContext('2d');
+      const hint = document.getElementById('stage-hint');
+
+      let W, H, dpr;
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        dpr = window.devicePixelRatio || 1;
+        W = rect.width;
+        H = rect.height;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      const BLUE = '#2C4A7C';
+      const RUST = '#B5591F';
+
+      let mode = 'attractor';
+      let nodes = [];
+      let particles = [];
+      let dragging = null;
+      let hoverNode = null;
+      let isRunning = true;
+
+      const NODE_RADIUS = 14;
+      const PARTICLE_RADIUS = 4;
+      const TRAIL_MAX = 90;
+
+      const DROP_COUNT = 12;
+      const DROP_SPREAD = 22;
+
+      const EXIT_MARGIN = 40;
+
+      function dist2(ax, ay, bx, by) {
+        const dx = ax - bx, dy = ay - by;
+        return dx * dx + dy * dy;
+      }
+
+      function makeNode(x, y, type) {
+        return {
+          x, y, type,
+          radius: NODE_RADIUS,
+          strength: type === 'attractor' ? 1 : -1
+        };
+      }
+
+      function makeParticle(x, y) {
+        return {
+          x, y,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          trail: [{ x, y }],
+          age: 0
+        };
+      }
+
+      function spawnParticleCluster(cx, cy) {
+        for (let i = 0; i < DROP_COUNT; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const r = Math.random() * DROP_SPREAD;
+          const x = cx + Math.cos(angle) * r;
+          const y = cy + Math.sin(angle) * r;
+          particles.push(makeParticle(x, y));
+        }
+        updateCounts();
+      }
+
+      function clearAll() {
+        nodes = [];
+        particles = [];
+        dragging = null;
+        updateCounts();
+      }
+
+      function updateCounts() {
+        const a = nodes.filter(n => n.type === 'attractor').length;
+        const r = nodes.filter(n => n.type === 'repeller').length;
+        document.getElementById('readout-attractors').textContent = a;
+        document.getElementById('readout-repellers').textContent = r;
+        document.getElementById('readout-particles').textContent = particles.length;
+      }
+
+      function step() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          let ax = 0, ay = 0;
+
+          for (const n of nodes) {
+            const dx = n.x - p.x;
+            const dy = n.y - p.y;
+            const d2 = dx * dx + dy * dy + 0.01;
+            const d = Math.sqrt(d2);
+
+            const falloff = Math.min(1, 60 / d);
+            const force = n.strength * falloff * 0.22;
+            ax += (dx / d) * force;
+            ay += (dy / d) * force;
+          }
+
+          p.vx += ax;
+          p.vy += ay;
+          p.vx *= 0.94;
+          p.vy *= 0.94;
+
+          const sp = Math.hypot(p.vx, p.vy);
+          const maxSpeed = 2.4;
+          if (sp > maxSpeed) {
+            p.vx = (p.vx / sp) * maxSpeed;
+            p.vy = (p.vy / sp) * maxSpeed;
+          }
+
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (
+            p.x < -EXIT_MARGIN ||
+            p.x > W + EXIT_MARGIN ||
+            p.y < -EXIT_MARGIN ||
+            p.y > H + EXIT_MARGIN
+          ) {
+            particles.splice(i, 1);
+            continue;
+          }
+
+          p.trail.push({ x: p.x, y: p.y });
+          if (p.trail.length > TRAIL_MAX) p.trail.shift();
+          p.age++;
+
+          if (sp < 0.08) {
+            for (const n of nodes) {
+              if (n.type !== 'attractor') continue;
+              if (dist2(p.x, p.y, n.x, n.y) < 64) {
+                p.vx = 0;
+                p.vy = 0;
+              }
+            }
+          }
+        }
+
+        document.getElementById('readout-particles').textContent = particles.length;
+      }
+
+      function drawNode(n, t) {
+        const isAttractor = n.type === 'attractor';
+        const color = isAttractor ? BLUE : RUST;
+        const wash = isAttractor ? 'rgba(44, 74, 124,' : 'rgba(181, 89, 31,';
+
+        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 90);
+        grad.addColorStop(0, wash + '0.22)');
+        grad.addColorStop(1, wash + '0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 90, 0, Math.PI * 2);
+        ctx.fill();
+
+        const time = t / 1000;
+        if (isAttractor) {
+          const pulse = (time * 0.6) % 1;
+          const ringR = n.radius + pulse * 26;
+          const ringA = (1 - pulse) * 0.5;
+          ctx.beginPath();
+          ctx.strokeStyle = wash + ringA + ')';
+          ctx.lineWidth = 1.2;
+          ctx.arc(n.x, n.y, ringR, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          for (let i = 0; i < 3; i++) {
+            const phase = time * 2 + i * 2.1;
+            const r = n.radius + 12 + Math.sin(phase) * 4;
+            ctx.beginPath();
+            ctx.strokeStyle = wash + (0.18 - i * 0.04) + ')';
+            ctx.lineWidth = 1;
+            ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#FBF8F1';
+        ctx.lineWidth = 1.6;
+        ctx.lineCap = 'round';
+        const arrowLen = 5;
+        for (let i = 0; i < 4; i++) {
+          const a = (i / 4) * Math.PI * 2;
+          const r1 = n.radius - 5;
+          const r2 = n.radius - 1;
+          const dir = isAttractor ? -1 : 1;
+
+          const x1 = n.x + Math.cos(a) * (r1 + dir * arrowLen * 0.5);
+          const y1 = n.y + Math.sin(a) * (r1 + dir * arrowLen * 0.5);
+          const x2 = n.x + Math.cos(a) * (r2 + dir * arrowLen * 0.5);
+          const y2 = n.y + Math.sin(a) * (r2 + dir * arrowLen * 0.5);
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+
+          const hx = x2;
+          const hy = y2;
+          const hLen = 3;
+          const perp = a + Math.PI / 2;
+          ctx.beginPath();
+          ctx.moveTo(hx, hy);
+          ctx.lineTo(
+            hx - Math.cos(a) * hLen + Math.cos(perp) * hLen * 0.7,
+            hy - Math.sin(a) * hLen + Math.sin(perp) * hLen * 0.7
+          );
+          ctx.moveTo(hx, hy);
+          ctx.lineTo(
+            hx - Math.cos(a) * hLen - Math.cos(perp) * hLen * 0.7,
+            hy - Math.sin(a) * hLen - Math.sin(perp) * hLen * 0.7
+          );
+          ctx.stroke();
+        }
+
+        if (hoverNode === n) {
+          ctx.beginPath();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.arc(n.x, n.y, n.radius + 5, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      function drawParticle(p) {
+        if (p.trail.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(31, 42, 60, 0.28)';
+          ctx.lineWidth = 1;
+          ctx.lineCap = 'round';
+          ctx.moveTo(p.trail[0].x, p.trail[0].y);
+          for (let i = 1; i < p.trail.length; i++) {
+            ctx.lineTo(p.trail[i].x, p.trail[i].y);
+          }
+          ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = '#1F2A3C';
+        ctx.arc(p.x, p.y, PARTICLE_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.arc(p.x - 1, p.y - 1, PARTICLE_RADIUS * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(244, 239, 228, 0.35)';
+        ctx.fillRect(0, 0, W, H);
+
+        for (const p of particles) drawParticle(p);
+        for (const n of nodes) drawNode(n, t);
+      }
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: cx - rect.left, y: cy - rect.top };
+      }
+
+      function nodeAt(x, y) {
+        for (let i = nodes.length - 1; i >= 0; i--) {
+          const n = nodes[i];
+          if (dist2(x, y, n.x, n.y) < (n.radius + 6) * (n.radius + 6)) return n;
+        }
+        return null;
+      }
+
+      function particleAt(x, y) {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          if (dist2(x, y, p.x, p.y) < (PARTICLE_RADIUS + 5) * (PARTICLE_RADIUS + 5)) return p;
+        }
+        return null;
+      }
+
+      function onPointerDown(e) {
+        const p = getPos(e);
+        hideHint();
+
+        if (mode === 'erase') {
+          const n = nodeAt(p.x, p.y);
+          if (n) {
+            nodes = nodes.filter(x => x !== n);
+            updateCounts();
+            return;
+          }
+          const pa = particleAt(p.x, p.y);
+          if (pa) {
+            particles = particles.filter(x => x !== pa);
+            updateCounts();
+            return;
+          }
+          return;
+        }
+
+        if (mode === 'particle') {
+          spawnParticleCluster(p.x, p.y);
+          return;
+        }
+
+        const existing = nodeAt(p.x, p.y);
+        if (existing) {
+          dragging = { kind: 'node', obj: existing, offsetX: existing.x - p.x, offsetY: existing.y - p.y };
+          return;
+        }
+
+        const newNode = makeNode(p.x, p.y, mode);
+        nodes.push(newNode);
+        dragging = { kind: 'node', obj: newNode, offsetX: 0, offsetY: 0 };
+        updateCounts();
+      }
+
+      function onPointerMove(e) {
+        const p = getPos(e);
+
+        if (dragging) {
+          if (dragging.kind === 'node') {
+            dragging.obj.x = p.x + dragging.offsetX;
+            dragging.obj.y = p.y + dragging.offsetY;
+          }
+          return;
+        }
+
+        if (mode === 'erase') {
+          hoverNode = nodeAt(p.x, p.y);
+          canvas.style.cursor = (hoverNode || particleAt(p.x, p.y)) ? 'pointer' : 'crosshair';
+        } else if (mode === 'attractor' || mode === 'repeller') {
+          const n = nodeAt(p.x, p.y);
+          hoverNode = n;
+          canvas.style.cursor = n ? 'grab' : 'crosshair';
+        } else {
+          hoverNode = null;
+          canvas.style.cursor = 'crosshair';
+        }
+      }
+
+      function onPointerUp() {
+        dragging = null;
+      }
+
+      canvas.addEventListener('mousedown', onPointerDown);
+      canvas.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('mouseup', onPointerUp);
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        onPointerDown(e);
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        onPointerMove(e);
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        onPointerUp();
+      }, { passive: false });
+
+      let hintHidden = false;
+      function hideHint() {
+        if (hintHidden) return;
+        hintHidden = true;
+        hint.classList.add('fade');
+      }
+
+      document.querySelectorAll('.tool-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          mode = btn.dataset.mode;
+          hoverNode = null;
+        });
+      });
+
+      document.getElementById('clear-all').addEventListener('click', clearAll);
+
+      function loop(t) {
+        if (isRunning) step();
+        draw(t);
+        requestAnimationFrame(loop);
+      }
+
+      function seed() {
+        nodes.push(makeNode(W * 0.32, H * 0.5, 'attractor'));
+        nodes.push(makeNode(W * 0.72, H * 0.5, 'repeller'));
+        updateCounts();
+      }
+
+      resize();
+      seed();
+      window.addEventListener('resize', () => {
+        resize();
+      });
+
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
