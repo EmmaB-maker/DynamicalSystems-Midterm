@@ -184,13 +184,39 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      margin-left: auto;
     }
 
     .action-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: var(--blue-wash);
+    }
+
+    .action-btn.danger:hover {
       border-color: var(--rust);
       color: var(--rust);
       background: var(--rust-wash);
+    }
+
+    .action-btn.primary:hover {
+      border-color: var(--purple);
+      color: var(--purple);
+      background: var(--purple-wash);
+    }
+
+    .action-btn .count-badge {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.06em;
+      color: var(--ink-faint);
+      background: var(--rule-soft);
+      padding: 1px 6px;
+      border-radius: 2px;
+    }
+
+    .action-btn:hover .count-badge {
+      background: rgba(255,255,255,0.6);
+      color: inherit;
     }
 
     /* ---- Node inspector panel ---- */
@@ -397,7 +423,7 @@
       .subhead { font-size: 0.98rem; }
       #states-canvas { height: 340px; }
       .toolbar { gap: 0.4rem; }
-      .action-btn { margin-left: 0; width: 100%; justify-content: center; }
+      .action-btn { margin-left: 0; flex: 1; justify-content: center; }
       .tool-group { width: 100%; justify-content: center; }
       .inspector { width: 100%; }
       .inspector input[type="range"] { flex: 1; }
@@ -446,8 +472,21 @@
           erase
         </button>
       </div>
+    </div>
 
-      <button class="action-btn" id="clear-all">
+    <div class="toolbar" style="border-bottom: none; margin-top: -0.4rem;">
+      <button class="action-btn primary" id="scatter-particles">
+        <i class="fas fa-sparkles"></i>
+        scatter particles
+        <span class="count-badge" id="particle-count">0</span>
+      </button>
+
+      <button class="action-btn danger" id="clear-particles">
+        <i class="fas fa-broom"></i>
+        clear particles
+      </button>
+
+      <button class="action-btn danger" id="clear-all" style="margin-left: auto;">
         <i class="fas fa-trash-alt"></i>
         clear all
       </button>
@@ -481,15 +520,14 @@
           <strong>Attractors</strong> (blue) pull nearby particles toward them. Left alone, the system settles into them.
         </li>
         <li>
-          <strong>Repellers</strong> (orange) push nearby particles away. The system doesn't want to stay in that state, it is like balancing a pencil on its tip.
+          <strong>Repellers</strong> (orange) push nearby particles away. The system doesn't want to stay in that state, because it is unstable like balancing a pencil on its tip.
         </li>
         <li>
-          <strong>Saddles</strong> (purple) pull particles along one axis and push them along the perpendicular axis. 
-          It is like a mountain pass, easy to travel in one direction and difficult in the other. Use <strong>select</strong> to rotate a saddle so its axes align however you like.
+          <strong>Saddles</strong> (purple) pull particles along one axis and push them along the perpendicular axis. They're stable in one direction and unstable in the other like a mountain pass. Use <strong>select</strong> to rotate a saddle so its axes align however you like.
         </li>
       </ul>
       <p>
-        Drop particles near a mix of these and watch their behavior. Select any node to adjust its <strong>strength</strong>, stronger nodes exert more force, so particles move faster around them.
+        Drop particles near a mix of these and watch their behavior. Or hit <strong>scatter particles</strong> to fill the whole canvas and watch them flow. Select any node to adjust its <strong>strength</strong> (stronger nodes exert more force) so particles move faster around them.
       </p>
       <p>
         <em>NOTE: One function of this code is that it assumes we are looking at only one window of the system.
@@ -513,6 +551,7 @@
       const rotationField = document.getElementById('rotation-field');
       const inspectorRotation = document.getElementById('inspector-rotation');
       const inspectorRotationVal = document.getElementById('inspector-rotation-val');
+      const particleCountBadge = document.getElementById('particle-count');
 
       let W, H, dpr;
       function resize() {
@@ -546,6 +585,10 @@
       const DROP_COUNT = 12;
       const DROP_SPREAD = 22;
 
+      // Scatter density: particles per 10,000 px² of canvas area.
+      // At 800×460 (~368,000 px²) this gives ~1,470 particles.
+      const SCATTER_DENSITY = 10;
+
       const EXIT_MARGIN = 40;
       const CAPTURE_RADIUS = 18;
 
@@ -559,7 +602,7 @@
           x, y, type,
           radius: NODE_RADIUS,
           strength: 1.0,
-          rotation: 0 // degrees, only used by saddles
+          rotation: 0
         };
       }
 
@@ -581,6 +624,35 @@
           const y = cy + Math.sin(angle) * r;
           particles.push(makeParticle(x, y));
         }
+        updateParticleCount();
+      }
+
+      // Fill the whole canvas with particles on a jittered grid.
+      function scatterParticles() {
+        const area = W * H;
+        const count = Math.round(area / 10000 * SCATTER_DENSITY);
+        // Grid dimensions roughly matching aspect ratio
+        const cols = Math.max(1, Math.round(Math.sqrt(count * W / H)));
+        const rows = Math.max(1, Math.round(count / cols));
+        const cellW = W / cols;
+        const cellH = H / rows;
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const jitterX = (Math.random() - 0.5) * cellW * 0.7;
+            const jitterY = (Math.random() - 0.5) * cellH * 0.7;
+            const x = (c + 0.5) * cellW + jitterX;
+            const y = (r + 0.5) * cellH + jitterY;
+            if (x < 0 || x > W || y < 0 || y > H) continue;
+            particles.push(makeParticle(x, y));
+          }
+        }
+        updateParticleCount();
+      }
+
+      function clearParticles() {
+        particles = [];
+        updateParticleCount();
       }
 
       function clearAll() {
@@ -589,6 +661,11 @@
         dragging = null;
         selectedNode = null;
         updateInspector();
+        updateParticleCount();
+      }
+
+      function updateParticleCount() {
+        particleCountBadge.textContent = particles.length;
       }
 
       // --- Force computation ---
@@ -611,31 +688,26 @@
         }
 
         if (n.type === 'saddle') {
-        // Rotate particle offset into saddle's local frame
-        const rad = n.rotation * Math.PI / 180;
-        const cos = Math.cos(-rad);
-        const sin = Math.sin(-rad);
-        const lx = dx * cos - dy * sin;
-        const ly = dx * sin + dy * cos;
+          // Rotate particle offset into saddle's local frame
+          const rad = n.rotation * Math.PI / 180;
+          const cos = Math.cos(-rad);
+          const sin = Math.sin(-rad);
+          const lx = dx * cos - dy * sin;
+          const ly = dx * sin + dy * cos;
 
-        // Influence radius: how far along each axis the saddle acts.
-        // Beyond this, the saddle contributes essentially nothing.
-        const R = 80;
+          // Bounded, local influence — vanishes beyond radius R
+          const R = 80;
+          const magX = -s * 0.32 * (lx / R) * Math.max(0, 1 - Math.abs(lx) / R);
+          const magY =  s * 0.32 * (ly / R) * Math.max(0, 1 - Math.abs(ly) / R);
 
-        // Soft, bounded local contributions.
-        // Attract along local x (pull toward the axis), repel along local y.
-        // Each term decays to zero beyond R.
-        const magX = -s * 0.32 * (lx / R) * Math.max(0, 1 - Math.abs(lx) / R);
-        const magY =  s * 0.32 * (ly / R) * Math.max(0, 1 - Math.abs(ly) / R);
+          // Rotate force back into world frame
+          const cos2 = Math.cos(rad);
+          const sin2 = Math.sin(rad);
+          const fx = magX * cos2 - magY * sin2;
+          const fy = magX * sin2 + magY * cos2;
 
-        // Rotate force back into world frame
-        const cos2 = Math.cos(rad);
-        const sin2 = Math.sin(rad);
-        const fx = magX * cos2 - magY * sin2;
-        const fy = magX * sin2 + magY * cos2;
-
-        return { fx, fy };
-      }
+          return { fx, fy };
+        }
 
         return { fx: 0, fy: 0 };
       }
@@ -695,6 +767,11 @@
           if (p.trail.length > TRAIL_MAX) p.trail.shift();
           p.age++;
         }
+
+        // Update badge once per frame (cheap, and only if it changed)
+        if (particleCountBadge.textContent != particles.length) {
+          updateParticleCount();
+        }
       }
 
       // --- Drawing helpers ---
@@ -710,7 +787,6 @@
         return 'rgba(107, 76, 138,';
       }
 
-      // Draw a straight arrow from (x1,y1) to (x2,y2) with head at (x2,y2)
       function drawArrow(x1, y1, x2, y2, headLen) {
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -739,7 +815,6 @@
         const sNorm = Math.min(1, n.strength / 3.0);
         const alpha = 0.55 + sNorm * 0.45;
 
-        // Soft glow (the only ambient effect — no animated rings)
         const glowRadius = 55 + sNorm * 35;
         const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowRadius);
         grad.addColorStop(0, wash + (0.10 + sNorm * 0.16) + ')');
@@ -749,7 +824,6 @@
         ctx.arc(n.x, n.y, glowRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Main circle
         ctx.beginPath();
         ctx.fillStyle = color;
         ctx.globalAlpha = alpha;
@@ -757,7 +831,6 @@
         ctx.fill();
         ctx.globalAlpha = 1.0;
 
-        // Draw arrows
         ctx.strokeStyle = '#FBF8F1';
         ctx.lineWidth = 1.6;
         ctx.lineCap = 'round';
@@ -767,12 +840,10 @@
         const arrowOuter = n.radius - 1;
 
         if (n.type === 'attractor') {
-          // 4 arrows around the perimeter, each pointing INWARD (toward center).
           for (let i = 0; i < 4; i++) {
             const a = (i / 4) * Math.PI * 2;
             const cosA = Math.cos(a);
             const sinA = Math.sin(a);
-            // Tail is at the outer edge, head is closer to the center
             const x1 = n.x + cosA * arrowOuter;
             const y1 = n.y + sinA * arrowOuter;
             const x2 = n.x + cosA * arrowInner;
@@ -780,12 +851,10 @@
             drawArrow(x1, y1, x2, y2, headLen);
           }
         } else if (n.type === 'repeller') {
-          // 4 arrows around the perimeter, each pointing OUTWARD.
           for (let i = 0; i < 4; i++) {
             const a = (i / 4) * Math.PI * 2;
             const cosA = Math.cos(a);
             const sinA = Math.sin(a);
-            // Tail is inside, head is at the outer edge
             const x1 = n.x + cosA * arrowInner;
             const y1 = n.y + sinA * arrowInner;
             const x2 = n.x + cosA * arrowOuter;
@@ -793,18 +862,13 @@
             drawArrow(x1, y1, x2, y2, headLen);
           }
         } else if (n.type === 'saddle') {
-          // Saddle: arrows along the local x axis point inward,
-          // arrows along the local y axis point outward.
           const rad = n.rotation * Math.PI / 180;
           const cosR = Math.cos(rad);
           const sinR = Math.sin(rad);
 
-          // Local +x direction (world)
           const xDir = { x: cosR, y: sinR };
-          // Local +y direction (world)
           const yDir = { x: -sinR, y: cosR };
 
-          // Pull arrows on the local x axis (inward)
           for (const sign of [1, -1]) {
             const tailX = n.x + xDir.x * arrowOuter * sign;
             const tailY = n.y + xDir.y * arrowOuter * sign;
@@ -813,7 +877,6 @@
             drawArrow(tailX, tailY, headX, headY, headLen);
           }
 
-          // Push arrows on the local y axis (outward)
           for (const sign of [1, -1]) {
             const tailX = n.x + yDir.x * arrowInner * sign;
             const tailY = n.y + yDir.y * arrowInner * sign;
@@ -823,7 +886,6 @@
           }
         }
 
-        // Hover ring
         if (hoverNode === n && selectedNode !== n) {
           ctx.beginPath();
           ctx.strokeStyle = color;
@@ -832,7 +894,6 @@
           ctx.stroke();
         }
 
-        // Selection ring
         if (selectedNode === n) {
           ctx.beginPath();
           ctx.strokeStyle = color;
@@ -940,7 +1001,6 @@
         const p = getPos(e);
         hideHint();
 
-        // --- Select mode: pick a node, edit it. ---
         if (mode === 'select') {
           const n = nodeAt(p.x, p.y);
           if (n) {
@@ -954,7 +1014,6 @@
           return;
         }
 
-        // --- Erase mode ---
         if (mode === 'erase') {
           const n = nodeAt(p.x, p.y);
           if (n) {
@@ -968,18 +1027,17 @@
           const pa = particleAt(p.x, p.y);
           if (pa) {
             particles = particles.filter(x => x !== pa);
+            updateParticleCount();
             return;
           }
           return;
         }
 
-        // --- Drop particles ---
         if (mode === 'particle') {
           spawnParticleCluster(p.x, p.y);
           return;
         }
 
-        // --- Place / move a node ---
         const existing = nodeAt(p.x, p.y);
         if (existing) {
           dragging = { kind: 'node', obj: existing, offsetX: existing.x - p.x, offsetY: existing.y - p.y };
@@ -1062,6 +1120,15 @@
         });
       });
 
+      document.getElementById('scatter-particles').addEventListener('click', () => {
+        scatterParticles();
+        hideHint();
+      });
+
+      document.getElementById('clear-particles').addEventListener('click', () => {
+        clearParticles();
+      });
+
       document.getElementById('clear-all').addEventListener('click', clearAll);
 
       function loop(t) {
@@ -1075,6 +1142,7 @@
         resize();
       });
 
+      updateParticleCount();
       requestAnimationFrame(loop);
     })();
   </script>
