@@ -366,35 +366,8 @@
       text-align: right;
     }
 
-    .readout {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.6rem;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--ink-faint);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 2rem;
-      padding-bottom: 1.4rem;
-      border-bottom: 1px solid var(--rule-soft);
-    }
-
-    .readout .stat {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-    }
-
-    .readout .stat .val {
-      color: var(--ink);
-      font-weight: 500;
-      font-size: 0.92rem;
-      letter-spacing: 0;
-      text-transform: none;
-    }
-
-    .readout .stat .val.blue { color: var(--blue); }
+    /* ---- READOUT REMOVED ---- */
+    /* The .readout section has been completely deleted. */
 
     .what-seen {
       background: var(--blue-wash);
@@ -433,7 +406,6 @@
       .rules { grid-template-columns: 1fr; }
       .rule-card p { font-size: 0.92rem; }
       #flock-canvas { height: 320px; }
-      .readout { gap: 1rem; }
       .slider-row {
         margin-left: 0;
         width: 100%;
@@ -452,10 +424,11 @@
     </div>
     
     <div class="what-seen">
+      <p>Rules:</p>
       <p>1. Match the average heading of nearby neighbors.</p>
       <p>2. Swim toward the average position of nearby neighbors.</p>
     </div>
-
+    </br>
     <div class="stage-wrap">
       <div class="stage-inner">
         <canvas id="flock-canvas"></canvas>
@@ -474,12 +447,8 @@
       </div>
     </div>
 
-    <div class="readout">
-      <div class="stat">
-        <span>fish in school</span>
-        <span class="val blue" id="readout-count">140</span>
-      </div>
-    </div>
+    <!-- READOUT SECTION FULLY REMOVED -->
+    <!-- No "fish in school" display anymore -->
 
     <div class="what-seen">
       <h4>what you should have seen</h4>
@@ -555,7 +524,7 @@
         for (let i = 0; i < startingCount; i++) {
           boids.push(makeFish());
         }
-        document.getElementById('readout-count').textContent = boids.length;
+        // No count element to update — readout removed
       }
 
       function stepFlock() {
@@ -786,7 +755,7 @@
           f.vy = (Math.random() - 0.5) * 2.4;
           boids.push(f);
         }
-        document.getElementById('readout-count').textContent = boids.length;
+        // Removed: document.getElementById('readout-count').textContent = boids.length;
         hideHint();
       });
 

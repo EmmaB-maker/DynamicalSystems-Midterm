@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>States Demo · Attractors & Repellers</title>
+  <title>States Demo · Attractors, Repellers & Saddles</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,8 +27,8 @@
       --blue-wash: rgba(44, 74, 124, 0.09);
       --rust: #B5591F;
       --rust-wash: rgba(181, 89, 31, 0.10);
-      --ochre: #C99A2E;
-      --ochre-wash: rgba(201, 154, 46, 0.12);
+      --purple: #6B4C8A;
+      --purple-wash: rgba(107, 76, 138, 0.10);
 
       --font-display: 'Special Elite', 'Courier New', monospace;
       --font-body: 'EB Garamond', 'Times New Roman', Times, serif;
@@ -61,22 +61,6 @@
     }
 
     .intro { margin-bottom: 1.2rem; }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--rust);
-      background: var(--rust-wash);
-      border: 1px solid rgba(181, 89, 31, 0.28);
-      padding: 4px 11px;
-      border-radius: 2px;
-      margin-bottom: 0.9rem;
-    }
 
     h1 {
       font-family: var(--font-display);
@@ -165,6 +149,12 @@
       color: var(--paper);
     }
 
+    .tool-btn.active.purple-mode {
+      background: var(--purple);
+      border-color: var(--purple);
+      color: var(--paper);
+    }
+
     .tool-btn i { font-size: 0.76rem; }
 
     .tool-btn .swatch {
@@ -176,6 +166,7 @@
 
     .tool-btn .swatch.blue { background: var(--blue); }
     .tool-btn .swatch.rust { background: var(--rust); }
+    .tool-btn .swatch.purple { background: var(--purple); }
 
     .tool-btn.active .swatch { box-shadow: 0 0 0 2px var(--paper); }
 
@@ -201,6 +192,88 @@
       color: var(--rust);
       background: var(--rust-wash);
     }
+
+    /* ---- Node inspector panel ---- */
+    .inspector {
+      display: none;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 10px 16px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      margin: 0.6rem 0 0.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      flex-wrap: wrap;
+    }
+
+    .inspector.visible { display: flex; }
+
+    .inspector .node-type-badge {
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+      padding: 3px 10px;
+      border-radius: 2px;
+      color: var(--paper);
+    }
+
+    .inspector .node-type-badge.attractor { background: var(--blue); }
+    .inspector .node-type-badge.repeller { background: var(--rust); }
+    .inspector .node-type-badge.saddle { background: var(--purple); }
+
+    .inspector .field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .inspector label { white-space: nowrap; }
+
+    .inspector input[type="range"] {
+      width: 130px;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--rule-soft);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .inspector input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--ink);
+      cursor: pointer;
+      border: none;
+    }
+
+    .inspector input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--ink);
+      cursor: pointer;
+      border: none;
+    }
+
+    .inspector .val {
+      color: var(--ink);
+      font-weight: 500;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    .inspector .field.hidden { display: none; }
 
     .stage-wrap {
       position: relative;
@@ -274,37 +347,6 @@
 
     .stage-hint.fade { opacity: 0; }
 
-    .readout {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.4rem;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--ink-faint);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 1.4rem;
-      padding-bottom: 1.1rem;
-      border-bottom: 1px solid var(--rule-soft);
-    }
-
-    .readout .stat {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-    }
-
-    .readout .stat .val {
-      color: var(--ink);
-      font-weight: 500;
-      font-size: 0.9rem;
-      letter-spacing: 0;
-      text-transform: none;
-    }
-
-    .readout .stat .val.blue { color: var(--blue); }
-    .readout .stat .val.rust { color: var(--rust); }
-
     .what-seen {
       background: var(--blue-wash);
       border-left: 3px solid var(--blue);
@@ -354,10 +396,11 @@
       h1 { font-size: 1.5rem; }
       .subhead { font-size: 0.98rem; }
       #states-canvas { height: 340px; }
-      .readout { gap: 1rem; }
       .toolbar { gap: 0.4rem; }
       .action-btn { margin-left: 0; width: 100%; justify-content: center; }
       .tool-group { width: 100%; justify-content: center; }
+      .inspector { width: 100%; }
+      .inspector input[type="range"] { flex: 1; }
     }
   </style>
 </head>
@@ -367,7 +410,7 @@
     <div class="intro">
       <h1>Build a <em>map of states</em>.</h1>
       <p class="subhead">
-        Place attractors (blue) and repellers (orange) anywhere on the canvas, then drop test particles to see where they flow. This is a map of where a system moves.
+        Place attractors (blue), repellers (orange), or saddles (purple) anywhere on the canvas, then drop test particles to see where they flow. Use <strong>select</strong> to adjust any node's strength (and a saddle's rotation).
       </p>
     </div>
 
@@ -382,10 +425,18 @@
           <span class="swatch rust"></span>
           repeller
         </button>
+        <button class="tool-btn purple-mode" data-mode="saddle">
+          <span class="swatch purple"></span>
+          saddle
+        </button>
       </div>
 
       <div class="tool-group">
         <span class="tool-label">interact</span>
+        <button class="tool-btn" data-mode="select">
+          <i class="fas fa-hand-pointer"></i>
+          select
+        </button>
         <button class="tool-btn" data-mode="particle">
           <i class="fas fa-circle"></i>
           drop particle
@@ -402,45 +453,48 @@
       </button>
     </div>
 
+    <div class="inspector" id="inspector">
+      <span class="node-type-badge" id="inspector-type">attractor</span>
+      <div class="field">
+        <label for="inspector-strength">strength</label>
+        <input type="range" id="inspector-strength" min="0.2" max="3.0" step="0.1" value="1.0">
+        <span class="val" id="inspector-strength-val">1.0</span>
+      </div>
+      <div class="field hidden" id="rotation-field">
+        <label for="inspector-rotation">rotation</label>
+        <input type="range" id="inspector-rotation" min="0" max="180" step="1" value="0">
+        <span class="val" id="inspector-rotation-val">0°</span>
+      </div>
+    </div>
+
     <div class="stage-wrap">
       <div class="stage-inner">
         <canvas id="states-canvas"></canvas>
       </div>
-      <div class="stage-hint" id="stage-hint">click to place · drag particles to move them</div>
-    </div>
-
-    <div class="readout">
-      <div class="stat">
-        <span>attractors</span>
-        <span class="val blue" id="readout-attractors">0</span>
-      </div>
-      <div class="stat">
-        <span>repellers</span>
-        <span class="val rust" id="readout-repellers">0</span>
-      </div>
-      <div class="stat">
-        <span>particles</span>
-        <span class="val" id="readout-particles">0</span>
-      </div>
+      <div class="stage-hint" id="stage-hint">click to place · select a node to edit it</div>
     </div>
 
     <div class="what-seen">
       <h4>what you should have seen</h4>
       <ul>
         <li>
-          <strong>Attractors</strong> (blue) pull nearby particles toward them. Left alone, the system settles into them. A pendulum settling at the bottom is finding its attractor.
+          <strong>Attractors</strong> (blue) pull nearby particles toward them. Left alone, the system settles into them.
         </li>
         <li>
-          <strong>Repellers</strong> (orange) push nearby particles away. The system doesn't want to stay in that state. They're unstable like balancing a pencil on its tip. Any tiny nudge and the pencil falls (or the particles flee).
+          <strong>Repellers</strong> (orange) push nearby particles away. The system doesn't want to stay in that state, it is like balancing a pencil on its tip.
+        </li>
+        <li>
+          <strong>Saddles</strong> (purple) pull particles along one axis and push them along the perpendicular axis. 
+          It is like a mountain pass, easy to travel in one direction and difficult in the other. Use <strong>select</strong> to rotate a saddle so its axes align however you like.
         </li>
       </ul>
       <p>
-        Drop particles near a mix of both and watch their behavior. Where do they go? How fast do they move?
+        Drop particles near a mix of these and watch their behavior. Select any node to adjust its <strong>strength</strong>, stronger nodes exert more force, so particles move faster around them.
       </p>
       <p>
         <em>NOTE: One function of this code is that it assumes we are looking at only one window of the system.
         This means that the system goes on forever in all directions and I depicted this by having particles that get pushed past the edge simply leave the map. 
-        No walls, no bouncing. Once the particicle leaves this window we assume it goes into another map that we don't have imagined here.</em>
+        No walls, no bouncing. Once the particle leaves this window we assume it goes into another map that we don't have imagined here.</em>
       </p>
     </div>
 
@@ -451,6 +505,14 @@
       const canvas = document.getElementById('states-canvas');
       const ctx = canvas.getContext('2d');
       const hint = document.getElementById('stage-hint');
+
+      const inspector = document.getElementById('inspector');
+      const inspectorType = document.getElementById('inspector-type');
+      const inspectorStrength = document.getElementById('inspector-strength');
+      const inspectorStrengthVal = document.getElementById('inspector-strength-val');
+      const rotationField = document.getElementById('rotation-field');
+      const inspectorRotation = document.getElementById('inspector-rotation');
+      const inspectorRotationVal = document.getElementById('inspector-rotation-val');
 
       let W, H, dpr;
       function resize() {
@@ -467,12 +529,14 @@
 
       const BLUE = '#2C4A7C';
       const RUST = '#B5591F';
+      const PURPLE = '#6B4C8A';
 
       let mode = 'attractor';
       let nodes = [];
       let particles = [];
       let dragging = null;
       let hoverNode = null;
+      let selectedNode = null;
       let isRunning = true;
 
       const NODE_RADIUS = 14;
@@ -483,6 +547,7 @@
       const DROP_SPREAD = 22;
 
       const EXIT_MARGIN = 40;
+      const CAPTURE_RADIUS = 18;
 
       function dist2(ax, ay, bx, by) {
         const dx = ax - bx, dy = ay - by;
@@ -493,7 +558,8 @@
         return {
           x, y, type,
           radius: NODE_RADIUS,
-          strength: type === 'attractor' ? 1 : -1
+          strength: 1.0,
+          rotation: 0 // degrees, only used by saddles
         };
       }
 
@@ -515,39 +581,89 @@
           const y = cy + Math.sin(angle) * r;
           particles.push(makeParticle(x, y));
         }
-        updateCounts();
       }
 
       function clearAll() {
         nodes = [];
         particles = [];
         dragging = null;
-        updateCounts();
+        selectedNode = null;
+        updateInspector();
       }
 
-      function updateCounts() {
-        const a = nodes.filter(n => n.type === 'attractor').length;
-        const r = nodes.filter(n => n.type === 'repeller').length;
-        document.getElementById('readout-attractors').textContent = a;
-        document.getElementById('readout-repellers').textContent = r;
-        document.getElementById('readout-particles').textContent = particles.length;
+      // --- Force computation ---
+      function computeForce(n, px, py) {
+        const dx = px - n.x;
+        const dy = py - n.y;
+        const d2 = dx * dx + dy * dy + 0.01;
+        const d = Math.sqrt(d2);
+        const falloff = Math.min(1, 80 / d);
+        const s = n.strength;
+
+        if (n.type === 'attractor') {
+          const mag = s * falloff * 0.28;
+          return { fx: -dx / d * mag, fy: -dy / d * mag };
+        }
+
+        if (n.type === 'repeller') {
+          const mag = s * falloff * 0.28;
+          return { fx: dx / d * mag, fy: dy / d * mag };
+        }
+
+        if (n.type === 'saddle') {
+        // Rotate particle offset into saddle's local frame
+        const rad = n.rotation * Math.PI / 180;
+        const cos = Math.cos(-rad);
+        const sin = Math.sin(-rad);
+        const lx = dx * cos - dy * sin;
+        const ly = dx * sin + dy * cos;
+
+        // Influence radius: how far along each axis the saddle acts.
+        // Beyond this, the saddle contributes essentially nothing.
+        const R = 80;
+
+        // Soft, bounded local contributions.
+        // Attract along local x (pull toward the axis), repel along local y.
+        // Each term decays to zero beyond R.
+        const magX = -s * 0.32 * (lx / R) * Math.max(0, 1 - Math.abs(lx) / R);
+        const magY =  s * 0.32 * (ly / R) * Math.max(0, 1 - Math.abs(ly) / R);
+
+        // Rotate force back into world frame
+        const cos2 = Math.cos(rad);
+        const sin2 = Math.sin(rad);
+        const fx = magX * cos2 - magY * sin2;
+        const fy = magX * sin2 + magY * cos2;
+
+        return { fx, fy };
+      }
+
+        return { fx: 0, fy: 0 };
       }
 
       function step() {
         for (let i = particles.length - 1; i >= 0; i--) {
           const p = particles[i];
           let ax = 0, ay = 0;
+          let captured = false;
 
           for (const n of nodes) {
             const dx = n.x - p.x;
             const dy = n.y - p.y;
-            const d2 = dx * dx + dy * dy + 0.01;
-            const d = Math.sqrt(d2);
+            const d = Math.sqrt(dx * dx + dy * dy + 0.01);
 
-            const falloff = Math.min(1, 60 / d);
-            const force = n.strength * falloff * 0.22;
-            ax += (dx / d) * force;
-            ay += (dy / d) * force;
+            if (n.type === 'attractor' && d < CAPTURE_RADIUS) {
+              captured = true;
+              break;
+            }
+
+            const f = computeForce(n, p.x, p.y);
+            ax += f.fx;
+            ay += f.fy;
+          }
+
+          if (captured) {
+            particles.splice(i, 1);
+            continue;
           }
 
           p.vx += ax;
@@ -556,7 +672,7 @@
           p.vy *= 0.94;
 
           const sp = Math.hypot(p.vx, p.vy);
-          const maxSpeed = 2.4;
+          const maxSpeed = 3.0;
           if (sp > maxSpeed) {
             p.vx = (p.vx / sp) * maxSpeed;
             p.vy = (p.vy / sp) * maxSpeed;
@@ -578,104 +694,153 @@
           p.trail.push({ x: p.x, y: p.y });
           if (p.trail.length > TRAIL_MAX) p.trail.shift();
           p.age++;
-
-          if (sp < 0.08) {
-            for (const n of nodes) {
-              if (n.type !== 'attractor') continue;
-              if (dist2(p.x, p.y, n.x, n.y) < 64) {
-                p.vx = 0;
-                p.vy = 0;
-              }
-            }
-          }
         }
+      }
 
-        document.getElementById('readout-particles').textContent = particles.length;
+      // --- Drawing helpers ---
+      function getNodeColor(n) {
+        if (n.type === 'attractor') return BLUE;
+        if (n.type === 'repeller') return RUST;
+        return PURPLE;
+      }
+
+      function getNodeWash(n) {
+        if (n.type === 'attractor') return 'rgba(44, 74, 124,';
+        if (n.type === 'repeller') return 'rgba(181, 89, 31,';
+        return 'rgba(107, 76, 138,';
+      }
+
+      // Draw a straight arrow from (x1,y1) to (x2,y2) with head at (x2,y2)
+      function drawArrow(x1, y1, x2, y2, headLen) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const perp = angle + Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(
+          x2 - Math.cos(angle) * headLen + Math.cos(perp) * headLen * 0.65,
+          y2 - Math.sin(angle) * headLen + Math.sin(perp) * headLen * 0.65
+        );
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(
+          x2 - Math.cos(angle) * headLen - Math.cos(perp) * headLen * 0.65,
+          y2 - Math.sin(angle) * headLen - Math.sin(perp) * headLen * 0.65
+        );
+        ctx.stroke();
       }
 
       function drawNode(n, t) {
-        const isAttractor = n.type === 'attractor';
-        const color = isAttractor ? BLUE : RUST;
-        const wash = isAttractor ? 'rgba(44, 74, 124,' : 'rgba(181, 89, 31,';
+        const color = getNodeColor(n);
+        const wash = getNodeWash(n);
+        const sNorm = Math.min(1, n.strength / 3.0);
+        const alpha = 0.55 + sNorm * 0.45;
 
-        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 90);
-        grad.addColorStop(0, wash + '0.22)');
+        // Soft glow (the only ambient effect — no animated rings)
+        const glowRadius = 55 + sNorm * 35;
+        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowRadius);
+        grad.addColorStop(0, wash + (0.10 + sNorm * 0.16) + ')');
         grad.addColorStop(1, wash + '0)');
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(n.x, n.y, 90, 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, glowRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        const time = t / 1000;
-        if (isAttractor) {
-          const pulse = (time * 0.6) % 1;
-          const ringR = n.radius + pulse * 26;
-          const ringA = (1 - pulse) * 0.5;
-          ctx.beginPath();
-          ctx.strokeStyle = wash + ringA + ')';
-          ctx.lineWidth = 1.2;
-          ctx.arc(n.x, n.y, ringR, 0, Math.PI * 2);
-          ctx.stroke();
-        } else {
-          for (let i = 0; i < 3; i++) {
-            const phase = time * 2 + i * 2.1;
-            const r = n.radius + 12 + Math.sin(phase) * 4;
-            ctx.beginPath();
-            ctx.strokeStyle = wash + (0.18 - i * 0.04) + ')';
-            ctx.lineWidth = 1;
-            ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-            ctx.stroke();
-          }
-        }
-
+        // Main circle
         ctx.beginPath();
         ctx.fillStyle = color;
+        ctx.globalAlpha = alpha;
         ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.globalAlpha = 1.0;
 
+        // Draw arrows
         ctx.strokeStyle = '#FBF8F1';
         ctx.lineWidth = 1.6;
         ctx.lineCap = 'round';
-        const arrowLen = 5;
-        for (let i = 0; i < 4; i++) {
-          const a = (i / 4) * Math.PI * 2;
-          const r1 = n.radius - 5;
-          const r2 = n.radius - 1;
-          const dir = isAttractor ? -1 : 1;
+        ctx.lineJoin = 'round';
+        const headLen = 4;
+        const arrowInner = n.radius - 7;
+        const arrowOuter = n.radius - 1;
 
-          const x1 = n.x + Math.cos(a) * (r1 + dir * arrowLen * 0.5);
-          const y1 = n.y + Math.sin(a) * (r1 + dir * arrowLen * 0.5);
-          const x2 = n.x + Math.cos(a) * (r2 + dir * arrowLen * 0.5);
-          const y2 = n.y + Math.sin(a) * (r2 + dir * arrowLen * 0.5);
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.stroke();
+        if (n.type === 'attractor') {
+          // 4 arrows around the perimeter, each pointing INWARD (toward center).
+          for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI * 2;
+            const cosA = Math.cos(a);
+            const sinA = Math.sin(a);
+            // Tail is at the outer edge, head is closer to the center
+            const x1 = n.x + cosA * arrowOuter;
+            const y1 = n.y + sinA * arrowOuter;
+            const x2 = n.x + cosA * arrowInner;
+            const y2 = n.y + sinA * arrowInner;
+            drawArrow(x1, y1, x2, y2, headLen);
+          }
+        } else if (n.type === 'repeller') {
+          // 4 arrows around the perimeter, each pointing OUTWARD.
+          for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI * 2;
+            const cosA = Math.cos(a);
+            const sinA = Math.sin(a);
+            // Tail is inside, head is at the outer edge
+            const x1 = n.x + cosA * arrowInner;
+            const y1 = n.y + sinA * arrowInner;
+            const x2 = n.x + cosA * arrowOuter;
+            const y2 = n.y + sinA * arrowOuter;
+            drawArrow(x1, y1, x2, y2, headLen);
+          }
+        } else if (n.type === 'saddle') {
+          // Saddle: arrows along the local x axis point inward,
+          // arrows along the local y axis point outward.
+          const rad = n.rotation * Math.PI / 180;
+          const cosR = Math.cos(rad);
+          const sinR = Math.sin(rad);
 
-          const hx = x2;
-          const hy = y2;
-          const hLen = 3;
-          const perp = a + Math.PI / 2;
-          ctx.beginPath();
-          ctx.moveTo(hx, hy);
-          ctx.lineTo(
-            hx - Math.cos(a) * hLen + Math.cos(perp) * hLen * 0.7,
-            hy - Math.sin(a) * hLen + Math.sin(perp) * hLen * 0.7
-          );
-          ctx.moveTo(hx, hy);
-          ctx.lineTo(
-            hx - Math.cos(a) * hLen - Math.cos(perp) * hLen * 0.7,
-            hy - Math.sin(a) * hLen - Math.sin(perp) * hLen * 0.7
-          );
-          ctx.stroke();
+          // Local +x direction (world)
+          const xDir = { x: cosR, y: sinR };
+          // Local +y direction (world)
+          const yDir = { x: -sinR, y: cosR };
+
+          // Pull arrows on the local x axis (inward)
+          for (const sign of [1, -1]) {
+            const tailX = n.x + xDir.x * arrowOuter * sign;
+            const tailY = n.y + xDir.y * arrowOuter * sign;
+            const headX = n.x + xDir.x * arrowInner * sign;
+            const headY = n.y + xDir.y * arrowInner * sign;
+            drawArrow(tailX, tailY, headX, headY, headLen);
+          }
+
+          // Push arrows on the local y axis (outward)
+          for (const sign of [1, -1]) {
+            const tailX = n.x + yDir.x * arrowInner * sign;
+            const tailY = n.y + yDir.y * arrowInner * sign;
+            const headX = n.x + yDir.x * arrowOuter * sign;
+            const headY = n.y + yDir.y * arrowOuter * sign;
+            drawArrow(tailX, tailY, headX, headY, headLen);
+          }
         }
 
-        if (hoverNode === n) {
+        // Hover ring
+        if (hoverNode === n && selectedNode !== n) {
           ctx.beginPath();
           ctx.strokeStyle = color;
           ctx.lineWidth = 2;
           ctx.arc(n.x, n.y, n.radius + 5, 0, Math.PI * 2);
           ctx.stroke();
+        }
+
+        // Selection ring
+        if (selectedNode === n) {
+          ctx.beginPath();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 3]);
+          ctx.arc(n.x, n.y, n.radius + 7, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
         }
       }
 
@@ -712,6 +877,42 @@
         for (const n of nodes) drawNode(n, t);
       }
 
+      // --- Inspector ---
+      function updateInspector() {
+        if (!selectedNode) {
+          inspector.classList.remove('visible');
+          return;
+        }
+        inspector.classList.add('visible');
+
+        inspectorType.textContent = selectedNode.type;
+        inspectorType.className = 'node-type-badge ' + selectedNode.type;
+
+        inspectorStrength.value = selectedNode.strength;
+        inspectorStrengthVal.textContent = selectedNode.strength.toFixed(1);
+
+        if (selectedNode.type === 'saddle') {
+          rotationField.classList.remove('hidden');
+          inspectorRotation.value = selectedNode.rotation;
+          inspectorRotationVal.textContent = selectedNode.rotation + '°';
+        } else {
+          rotationField.classList.add('hidden');
+        }
+      }
+
+      inspectorStrength.addEventListener('input', () => {
+        if (!selectedNode) return;
+        selectedNode.strength = parseFloat(inspectorStrength.value);
+        inspectorStrengthVal.textContent = selectedNode.strength.toFixed(1);
+      });
+
+      inspectorRotation.addEventListener('input', () => {
+        if (!selectedNode) return;
+        selectedNode.rotation = parseFloat(inspectorRotation.value);
+        inspectorRotationVal.textContent = selectedNode.rotation + '°';
+      });
+
+      // --- Input handling ---
       function getPos(e) {
         const rect = canvas.getBoundingClientRect();
         const cx = e.touches ? e.touches[0].clientX : e.clientX;
@@ -739,27 +940,46 @@
         const p = getPos(e);
         hideHint();
 
+        // --- Select mode: pick a node, edit it. ---
+        if (mode === 'select') {
+          const n = nodeAt(p.x, p.y);
+          if (n) {
+            selectedNode = n;
+            dragging = { kind: 'node', obj: n, offsetX: n.x - p.x, offsetY: n.y - p.y };
+            updateInspector();
+          } else {
+            selectedNode = null;
+            updateInspector();
+          }
+          return;
+        }
+
+        // --- Erase mode ---
         if (mode === 'erase') {
           const n = nodeAt(p.x, p.y);
           if (n) {
             nodes = nodes.filter(x => x !== n);
-            updateCounts();
+            if (selectedNode === n) {
+              selectedNode = null;
+              updateInspector();
+            }
             return;
           }
           const pa = particleAt(p.x, p.y);
           if (pa) {
             particles = particles.filter(x => x !== pa);
-            updateCounts();
             return;
           }
           return;
         }
 
+        // --- Drop particles ---
         if (mode === 'particle') {
           spawnParticleCluster(p.x, p.y);
           return;
         }
 
+        // --- Place / move a node ---
         const existing = nodeAt(p.x, p.y);
         if (existing) {
           dragging = { kind: 'node', obj: existing, offsetX: existing.x - p.x, offsetY: existing.y - p.y };
@@ -769,7 +989,6 @@
         const newNode = makeNode(p.x, p.y, mode);
         nodes.push(newNode);
         dragging = { kind: 'node', obj: newNode, offsetX: 0, offsetY: 0 };
-        updateCounts();
       }
 
       function onPointerMove(e) {
@@ -783,10 +1002,14 @@
           return;
         }
 
-        if (mode === 'erase') {
+        if (mode === 'select') {
+          const n = nodeAt(p.x, p.y);
+          hoverNode = n;
+          canvas.style.cursor = n ? 'pointer' : 'default';
+        } else if (mode === 'erase') {
           hoverNode = nodeAt(p.x, p.y);
           canvas.style.cursor = (hoverNode || particleAt(p.x, p.y)) ? 'pointer' : 'crosshair';
-        } else if (mode === 'attractor' || mode === 'repeller') {
+        } else if (mode === 'attractor' || mode === 'repeller' || mode === 'saddle') {
           const n = nodeAt(p.x, p.y);
           hoverNode = n;
           canvas.style.cursor = n ? 'grab' : 'crosshair';
@@ -832,6 +1055,10 @@
           btn.classList.add('active');
           mode = btn.dataset.mode;
           hoverNode = null;
+          if (mode !== 'select') {
+            selectedNode = null;
+            updateInspector();
+          }
         });
       });
 
@@ -843,14 +1070,7 @@
         requestAnimationFrame(loop);
       }
 
-      function seed() {
-        nodes.push(makeNode(W * 0.32, H * 0.5, 'attractor'));
-        nodes.push(makeNode(W * 0.72, H * 0.5, 'repeller'));
-        updateCounts();
-      }
-
       resize();
-      seed();
       window.addEventListener('resize', () => {
         resize();
       });

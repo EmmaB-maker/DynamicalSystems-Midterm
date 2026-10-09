@@ -340,6 +340,50 @@
     }
     .highlight-box.rust strong { color: var(--rust); }
 
+    .what-seen {
+      background: var(--blue-wash);
+      border-left: 3px solid var(--blue);
+      padding: 1rem 1.2rem;
+      border-radius: 0 3px 3px 0;
+      margin-top: 1.2rem;
+    }
+
+    .what-seen h4 {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.55rem;
+      font-weight: 500;
+    }
+
+    .what-seen p {
+      font-family: var(--font-body);
+      font-size: 1.02rem;
+      color: var(--ink-soft);
+      line-height: 1.75;
+      margin-bottom: 0.55rem;
+    }
+
+    .what-seen p:last-child { margin-bottom: 0; }
+
+    .what-seen strong { color: var(--ink); font-weight: 600; }
+
+    .what-seen ul {
+      margin: 0.4rem 0 0.6rem 1.2rem;
+    }
+
+    .what-seen li {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--ink-soft);
+      margin-bottom: 0.3rem;
+      line-height: 1.7;
+    }
+
+    .what-seen li::marker { color: var(--rust); }
+
     /* ---------- MINI DIAGRAM ---------- */
     .mini-diagram {
       display: flex;
@@ -610,10 +654,9 @@
     </div>
 
     <div class="tabs" id="tabButtons">
-      <button class="tab-btn active" data-tab="emergence"> emergence</button>
+      <button class="tab-btn active" data-tab="emergence"> patterns</button>
       <button class="tab-btn" data-tab="variables"> variables</button>
       <button class="tab-btn" data-tab="states"> states</button>
-      <button class="tab-btn" data-tab="time"> time</button>
     </div>
 
     <div class="tab-content">
@@ -621,9 +664,8 @@
       <div class="tab-pane active" id="emergence">
         <h2>Emergence and Self-Organization</h2>
 
-        <p>Have you ever seen patterns appear in places where they seemed to come along randomly? 
+        <p>Have you ever seen patterns appear seemingly randomly? 
           A flock of birds turning as one across the sky. Water flowing down a river. 
-          A traffic jam that forms out of nowhere, then dissolves just as quickly. 
           Nothing is telling any of these what to do, yet each one produces a pattern you can see and sometimes name.</p>
 
         <p><strong>Emergence</strong> is what happens when all the parts of a system produce patterns that none of the individual parts possess on their own.</p>
@@ -665,8 +707,21 @@
           <li>In a different study, the input might be sleep quantity and the output might be reported energy.</li>
         </ul>
 
-        <p>Here is the part that makes variables matter for dynamical systems. We do not just measure these once. We watch how they <strong>move over time</strong>. A variable that changes is what turns a static snapshot into a system in motion.</p>
+        <p>Here is the part that makes variables matter for dynamical systems. We do not just measure these once. We watch how they <strong>move over time</strong>.</p>
 
+        <div class="what-seen">
+          <h4>The Role of Time</h4>
+          <p>Have you ever experinced anytihng without the presence of time?
+            I doubt it.
+            Time is inherent to human life, to experiences, to movement, to anything I can think of.
+            Just as it is inherent to dynamical systems.
+          </p>
+          <p>Without time, dynamical systems is just a static picture. 
+            Time allows us to see how states evolve, how long they last, and how quickly they change.
+          </p>
+          <p>In short, time is defined by <strong>change</strong> in dynamical systems</p>
+        </div>
+        </br>
         <p>We can understand measurement types by talking about discrete versus continuous measures. Here, we're focused on how often something is measured over time. We call this the <strong>sampling rate</strong>.</p>
 
         <ul>
@@ -675,8 +730,8 @@
         </ul>
 
         <p>The sampling rate decides what patterns you can see. 
-          A signal that oscillates quickly will disappear if you only sample it once a day. 
-          A signal that drifts slowly can be fully captured by hourly readings. 
+          A pattern that oscillates quickly will disappear if you only sample it once a day. 
+          A pattern that drifts slowly can be fully captured by hourly readings. 
           This matters for dynamical systems because you can only study the dynamics you can actually observe.
         </p>
       </div>
@@ -695,7 +750,6 @@
         <ul>
           <li>Some are stable and hold their shape even when the system is nudged by something external (attractor).</li>
           <li>Some are unstable and don't want to stay there for very long (repeller).</li>
-          <li>Some are just passing through, like the pre-pattern values that show up before a system settles.</li>
         </ul>
 
         <p>Distinguishing states lets us describe the behavior of a system. 
@@ -709,22 +763,6 @@
           </button>
           <span class="demo-launch-note">try it yourself · build a state map</span>
         </div>
-      </div>
-
-      <!-- TIME -->
-      <div class="tab-pane" id="time">
-        <h2>The Role of Time</h2>
-
-        <p>Have you ever experienced anything without the presence of time? 
-          I doubt it. Time is inherent to human life, to experience, to movement, to anything you can think of. 
-          Just as it is inherent in dynamical systems.
-        </p>
-
-        <p>Without time, a dynamical system is just a static picture. Time allows us see how states evolve, how long they last, and how quickly they change.</p>
-
-        <p>Time is what turns a collection of snapshots into a story of change.</p>
-
-        <p>In short, time is defined by <strong>change</strong> in dynamical systems</p>
       </div>
 
   </div>
@@ -776,7 +814,6 @@
         emergence: document.getElementById('emergence'),
         variables: document.getElementById('variables'),
         states: document.getElementById('states'),
-        time: document.getElementById('time')
       };
 
       tabButtons.forEach(btn => {
